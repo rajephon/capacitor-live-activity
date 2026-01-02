@@ -1,5 +1,25 @@
 # Changelog
 
+## [8.0.0] - 2026-01-03
+
+### Breaking
+
+- **Minimum iOS Version:** Bumped minimum iOS deployment target to **15.0** to match Capacitor 8 requirements.
+- **Capacitor 8:** Updated peer dependencies and dev dependencies to Capacitor 8.0.0 (`^8.0.0`).
+
+### Changed
+
+- **Dependencies:** Updated all Capacitor dependencies to v8.
+- **Tooling:** Updated `Package.swift` and `CapacitorLiveActivity.podspec` to enforce iOS 15.0 platform requirement.
+
+### Upgrade Notes
+
+1. **Update `Podfile`**: Set `platform :ios, '15.0'`.
+2. **Update Xcode Targets**: Set **iOS Deployment Target** to **15.0** for your App and Widget Extensions.
+3. **Sync**: Run `npx cap sync` to apply changes.
+
+See `BREAKING-8.0.0.md` for full details.
+
 ## [7.1.0] - 2025-10-28
 
 ### Added
