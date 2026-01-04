@@ -4,7 +4,7 @@
 [![bundle size](https://img.shields.io/bundlephobia/minzip/capacitor-live-activity)](https://bundlephobia.com/result?p=capacitor-live-activity)
 [![License: MIT](https://img.shields.io/npm/l/capacitor-live-activity)](./LICENSE)
 [![Platforms](https://img.shields.io/badge/platforms-iOS-orange)](#-platform-behavior)
-[![Capacitor](https://img.shields.io/badge/capacitor-7.x-blue)](https://capacitorjs.com/)
+[![Capacitor](https://img.shields.io/badge/capacitor-8.x-blue)](https://capacitorjs.com/)
 
 A Capacitor plugin for managing iOS Live Activities using ActivityKit and Swift.
 
@@ -184,20 +184,20 @@ The demo is designed to run on real iOS devices and showcases multiple Live Acti
 
 <docgen-index>
 
-* [`startActivity(...)`](#startactivity)
-* [`startActivityWithPush(...)`](#startactivitywithpush)
-* [`updateActivity(...)`](#updateactivity)
-* [`endActivity(...)`](#endactivity)
-* [`isAvailable()`](#isavailable)
-* [`isRunning(...)`](#isrunning)
-* [`getCurrentActivity(...)`](#getcurrentactivity)
-* [`listActivities()`](#listactivities)
-* [`observePushToStartToken()`](#observepushtostarttoken)
-* [`addListener('liveActivityPushToken', ...)`](#addlistenerliveactivitypushtoken-)
-* [`addListener('liveActivityPushToStartToken', ...)`](#addlistenerliveactivitypushtostarttoken-)
-* [`addListener('liveActivityUpdate', ...)`](#addlistenerliveactivityupdate-)
-* [Interfaces](#interfaces)
-* [Type Aliases](#type-aliases)
+- [`startActivity(...)`](#startactivity)
+- [`startActivityWithPush(...)`](#startactivitywithpush)
+- [`updateActivity(...)`](#updateactivity)
+- [`endActivity(...)`](#endactivity)
+- [`isAvailable()`](#isavailable)
+- [`isRunning(...)`](#isrunning)
+- [`getCurrentActivity(...)`](#getcurrentactivity)
+- [`listActivities()`](#listactivities)
+- [`observePushToStartToken()`](#observepushtostarttoken)
+- [`addListener('liveActivityPushToken', ...)`](#addlistenerliveactivitypushtoken-)
+- [`addListener('liveActivityPushToStartToken', ...)`](#addlistenerliveactivitypushtostarttoken-)
+- [`addListener('liveActivityUpdate', ...)`](#addlistenerliveactivityupdate-)
+- [Interfaces](#interfaces)
+- [Type Aliases](#type-aliases)
 
 </docgen-index>
 
@@ -218,8 +218,7 @@ Start a new Live Activity with local (on-device) ActivityKit.
 
 **Since:** 0.0.1
 
---------------------
-
+---
 
 ### startActivityWithPush(...)
 
@@ -240,8 +239,7 @@ the `"liveActivityPushToken"` event shortly after starting.
 
 **Since:** 7.1.0
 
---------------------
-
+---
 
 ### updateActivity(...)
 
@@ -257,8 +255,7 @@ Update an existing Live Activity (identified by your logical `id`).
 
 **Since:** 0.0.1
 
---------------------
-
+---
 
 ### endActivity(...)
 
@@ -276,8 +273,7 @@ Optionally provide a final state and a dismissal policy.
 
 **Since:** 0.0.1
 
---------------------
-
+---
 
 ### isAvailable()
 
@@ -293,8 +289,7 @@ Return whether Live Activities are enabled and allowed on this device.
 
 **Since:** 0.0.1
 
---------------------
-
+---
 
 ### isRunning(...)
 
@@ -314,8 +309,7 @@ Return whether a Live Activity with the given logical `id` is currently running.
 
 **Since:** 0.0.1
 
---------------------
-
+---
 
 ### getCurrentActivity(...)
 
@@ -336,8 +330,7 @@ If no `id` is given, returns the most recently started activity.
 
 **Since:** 0.0.1
 
---------------------
-
+---
 
 ### listActivities()
 
@@ -355,8 +348,7 @@ becomes aware of them.
 
 **Since:** 7.1.0
 
---------------------
-
+---
 
 ### observePushToStartToken()
 
@@ -370,8 +362,7 @@ The token will be emitted via `"liveActivityPushToStartToken"`.
 
 **Since:** 7.1.0
 
---------------------
-
+---
 
 ### addListener('liveActivityPushToken', ...)
 
@@ -391,8 +382,7 @@ after calling `startActivityWithPush`.
 
 **Since:** 7.1.0
 
---------------------
-
+---
 
 ### addListener('liveActivityPushToStartToken', ...)
 
@@ -411,8 +401,7 @@ Emitted when a global **push-to-start** token is available (iOS 17.2+).
 
 **Since:** 7.1.0
 
---------------------
-
+---
 
 ### addListener('liveActivityUpdate', ...)
 
@@ -431,11 +420,9 @@ Emitted when the lifecycle of a Live Activity changes (e.g. active → stale).
 
 **Since:** 7.1.0
 
---------------------
-
+---
 
 ### Interfaces
-
 
 #### StartActivityOptions
 
@@ -448,7 +435,6 @@ Options for starting a Live Activity.
 | **`contentState`** | <code><a href="#record">Record</a>&lt;string, string&gt;</code> | Initial dynamic content state.                        |
 | **`timestamp`**    | <code>number</code>                                             | Optional UNIX timestamp when the activity started.    |
 
-
 #### UpdateActivityOptions
 
 Options for updating a Live Activity.
@@ -460,7 +446,6 @@ Options for updating a Live Activity.
 | **`alert`**        | <code><a href="#alertconfiguration">AlertConfiguration</a></code> | Optional alert configuration to show a notification banner or Apple Watch alert. |
 | **`timestamp`**    | <code>number</code>                                               | Optional UNIX timestamp for the update.                                          |
 
-
 #### AlertConfiguration
 
 Alert configuration shown for certain updates.
@@ -470,7 +455,6 @@ Alert configuration shown for certain updates.
 | **`title`** | <code>string</code> | Optional title of the alert.           |
 | **`body`**  | <code>string</code> | Optional body text of the alert.       |
 | **`sound`** | <code>string</code> | Optional sound file name or "default". |
-
 
 #### EndActivityOptions
 
@@ -482,7 +466,6 @@ Options for ending a Live Activity.
 | **`contentState`**  | <code><a href="#record">Record</a>&lt;string, string&gt;</code> | Final dynamic content state to render before dismissal.                                         |
 | **`timestamp`**     | <code>number</code>                                             | Optional UNIX timestamp for the end event.                                                      |
 | **`dismissalDate`** | <code>number</code>                                             | Optional future dismissal time (UNIX). If omitted, the system default dismissal policy applies. |
-
 
 #### LiveActivityState
 
@@ -496,15 +479,13 @@ Represents the state of a Live Activity returned by the plugin.
 | **`isEnded`**   | <code>boolean</code>                                            | Whether the activity has ended.                        |
 | **`startedAt`** | <code>string</code>                                             | ISO string of when the activity started (if provided). |
 
-
 #### ListActivitiesResult
 
 Result of listing activities.
 
-| Prop        | Type                                                                                                                                                                                                                                                                                          |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **`items`** | <code><a href="#array">Array</a>&lt;{ /** Your logical ID (attributes.id). */ id: string; /** System activity identifier (Activity.id). */ activityId: string; /** ActivityKit state as a string ("active" \| "stale" \| "pending" \| "ended" \| "dismissed"). */ state: string; }&gt;</code> |
-
+| Prop        | Type                                                                                                                                                                                                                                                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **`items`** | <code><a href="#array">Array</a>&lt;{ /** Your logical ID (attributes.id). \*/ id: string; /** System activity identifier (Activity.id). _/ activityId: string; /\*\* ActivityKit state as a string ("active" \| "stale" \| "pending" \| "ended" \| "dismissed"). _/ state: string; }&gt;</code> |
 
 #### Array
 
@@ -544,7 +525,6 @@ Result of listing activities.
 | **reduceRight**    | (callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) =&gt; T, initialValue: T) =&gt; T          |                                                                                                                                                                                                                                             |
 | **reduceRight**    | &lt;U&gt;(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) =&gt; U, initialValue: U) =&gt; U | Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function. |
 
-
 #### ConcatArray
 
 | Prop         | Type                |
@@ -556,13 +536,11 @@ Result of listing activities.
 | **join**  | (separator?: string \| undefined) =&gt; string                     |
 | **slice** | (start?: number \| undefined, end?: number \| undefined) =&gt; T[] |
 
-
 #### PluginListenerHandle
 
 | Prop         | Type                                      |
 | ------------ | ----------------------------------------- |
 | **`remove`** | <code>() =&gt; Promise&lt;void&gt;</code> |
-
 
 #### PushTokenEvent
 
@@ -574,7 +552,6 @@ Event payload for per-activity live-activity push tokens.
 | **`activityId`** | <code>string</code> | System activity identifier (Activity.id).                   |
 | **`token`**      | <code>string</code> | Hex-encoded APNs/FCM live activity token for this activity. |
 
-
 #### PushToStartTokenEvent
 
 Event payload for the global push-to-start token (iOS 17.2+).
@@ -582,7 +559,6 @@ Event payload for the global push-to-start token (iOS 17.2+).
 | Prop        | Type                | Description                                           |
 | ----------- | ------------------- | ----------------------------------------------------- |
 | **`token`** | <code>string</code> | Hex-encoded APNs/FCM push-to-start token (iOS 17.2+). |
-
 
 #### ActivityUpdateEvent
 
@@ -594,14 +570,14 @@ Event payload for activity lifecycle updates.
 | **`activityId`** | <code>string</code> | System activity identifier (Activity.id). |
 | **`state`**      | <code>string</code> | ActivityKit state as a string.            |
 
-
 ### Type Aliases
-
 
 #### Record
 
 Construct a type with a set of properties K of type T
 
-<code>{ [P in K]: T; }</code>
+<code>{
+ [P in K]: T;
+ }</code>
 
 </docgen-api>
