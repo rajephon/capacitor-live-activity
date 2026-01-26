@@ -5,6 +5,7 @@ import { WebPlugin } from '@capacitor/core';
 import type {
   LiveActivityPlugin,
   StartActivityOptions,
+  ScheduledActivityOptions,
   UpdateActivityOptions,
   EndActivityOptions,
   LiveActivityState,
@@ -43,6 +44,11 @@ export class LiveActivityWeb extends WebPlugin implements LiveActivityPlugin {
   // ---- Push-capable APIs ----
   async startActivityWithPush(_options: StartActivityOptions): Promise<{ activityId: string }> {
     console.warn('[LiveActivity] startActivityWithPush is only available on iOS.');
+    return { activityId: '' };
+  }
+
+  async startActivityScheduled(_options: ScheduledActivityOptions): Promise<{ activityId: string }> {
+    console.warn('[LiveActivity] startActivityScheduled is only available on iOS 26+.');
     return { activityId: '' };
   }
 

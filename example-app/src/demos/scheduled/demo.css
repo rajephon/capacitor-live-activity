@@ -1,0 +1,108 @@
+/* Scheduled Activity Demo Styles */
+
+.info-card {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border: none;
+}
+
+.info-card h2 {
+  color: white;
+}
+
+.info-card p {
+  margin: 0.5rem 0;
+  line-height: 1.5;
+}
+
+.quick-schedule {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.75rem;
+  margin-top: 0.5rem;
+}
+
+.quick-schedule button {
+  padding: 0.75rem 1rem;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+details {
+  margin-top: 0.5rem;
+  background: rgba(0, 0, 0, 0.03);
+  padding: 0.75rem;
+  border-radius: 8px;
+}
+
+details[open] {
+  padding-bottom: 1rem;
+}
+
+details summary {
+  cursor: pointer;
+  font-weight: 500;
+  user-select: none;
+  list-style: none;
+  display: flex;
+  align-items: center;
+}
+
+details summary::-webkit-details-marker {
+  display: none;
+}
+
+details summary::before {
+  content: '▶';
+  display: inline-block;
+  margin-right: 0.5rem;
+  transition: transform 0.2s;
+  font-size: 0.8rem;
+}
+
+details[open] summary::before {
+  transform: rotate(90deg);
+}
+
+input, textarea, select {
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-family: inherit;
+  font-size: 0.9rem;
+}
+
+textarea {
+  min-height: 80px;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+
+input.invalid, textarea.invalid {
+  border-color: #ff3b30;
+  background-color: #fff0f0;
+}
+
+.tooltip {
+  color: #ff3b30;
+  font-size: 0.85rem;
+  margin-top: 0.25rem;
+}
+
+@media (prefers-color-scheme: dark) {
+  details {
+    background: rgba(255, 255, 255, 0.05);
+  }
+  
+  input, textarea, select {
+    background: rgba(255, 255, 255, 0.1);
+    border-color: rgba(255, 255, 255, 0.2);
+    color: white;
+  }
+  
+  input.invalid, textarea.invalid {
+    border-color: #ff453a;
+    background-color: rgba(255, 69, 58, 0.1);
+  }
+}

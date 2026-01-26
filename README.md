@@ -25,10 +25,14 @@ A Capacitor plugin for managing iOS Live Activities using ActivityKit and Swift.
     - [4. Add Capability](#4-add-capability)
     - [5. Ensure Inclusion in Build](#5-ensure-inclusion-in-build)
   - [🧠 Platform behavior](#-platform-behavior)
+  - [💡 Usage Examples](#-usage-examples)
+    - [Basic Live Activity](#basic-live-activity)
+    - [Scheduled Live Activity (iOS 26+)](#scheduled-live-activity-ios-26)
   - [📱 Example App](#-example-app)
   - [🛠 API](#-api)
     - [startActivity(...)](#startactivity)
     - [startActivityWithPush(...)](#startactivitywithpush)
+    - [startActivityScheduled(...)](#startactivityscheduled)
     - [updateActivity(...)](#updateactivity)
     - [endActivity(...)](#endactivity)
     - [isAvailable()](#isavailable)
@@ -41,8 +45,9 @@ A Capacitor plugin for managing iOS Live Activities using ActivityKit and Swift.
     - [addListener('liveActivityUpdate', ...)](#addlistenerliveactivityupdate-)
     - [Interfaces](#interfaces)
       - [StartActivityOptions](#startactivityoptions)
-      - [UpdateActivityOptions](#updateactivityoptions)
+      - [ScheduledActivityOptions](#scheduledactivityoptions)
       - [AlertConfiguration](#alertconfiguration)
+      - [UpdateActivityOptions](#updateactivityoptions)
       - [EndActivityOptions](#endactivityoptions)
       - [LiveActivityState](#liveactivitystate)
       - [ListActivitiesResult](#listactivitiesresult)
@@ -164,8 +169,85 @@ Go to your main app target → Signing & Capabilities tab and add:
 
 - iOS 16.2+: Live Activities (local start/update/end)
 - iOS 17.2+: Remote start via push (push-to-start) and per-activity push updates
+- iOS 26.0+: Schedule Live Activities to start at a future date
 - Real device required (no Simulator)
 - For remote flows, test with the app in background/terminated
+
+## 💡 Usage Examples
+
+### Basic Live Activity
+
+```typescript
+import { LiveActivity } from 'capacitor-live-activity';
+
+// Start a basic Live Activity
+await LiveActivity.startActivity({
+  id: 'my-activity',
+  attributes: {
+    title: 'Delivery',
+  },
+  contentState: {
+    status: 'On the way',
+    eta: '15 min',
+  },
+});
+
+// Update it
+await LiveActivity.updateActivity({
+  id: 'my-activity',
+  contentState: {
+    status: 'Almost there!',
+    eta: '2 min',
+  },
+});
+
+// End it
+await LiveActivity.endActivity({
+  id: 'my-activity',
+  contentState: {
+    status: 'Delivered',
+    eta: '0 min',
+  },
+});
+```
+
+### Scheduled Live Activity (iOS 26+)
+
+Schedule a Live Activity to start at a future date, perfect for upcoming events like sports games, meetings, or deliveries:
+
+```typescript
+import { LiveActivity } from 'capacitor-live-activity';
+
+// Schedule a Live Activity to start in 2 hours
+const futureDate = Date.now() / 1000 + 2 * 60 * 60; // UNIX timestamp in seconds
+
+await LiveActivity.startActivityScheduled({
+  id: 'game-activity',
+  attributes: {
+    homeTeam: 'Warriors',
+    awayTeam: 'Lakers',
+  },
+  contentState: {
+    status: 'Scheduled',
+    startTime: '7:30 PM',
+  },
+  startDate: futureDate,
+  alertConfiguration: {
+    title: 'Game Starting Soon!',
+    body: 'Warriors vs Lakers begins in 15 minutes',
+    sound: 'default',
+  },
+  enablePushToUpdate: true, // Optional: enable push updates
+  style: 'standard', // Optional: 'standard' or 'transient'
+});
+
+// The activity will automatically start at the scheduled time
+// Listen for push tokens if enablePushToUpdate is true
+LiveActivity.addListener('liveActivityPushToken', (event) => {
+  console.log('Push token:', event.token);
+  // Send this token to your server for push updates
+});
+```
 
 ## 📱 Example App
 
@@ -184,20 +266,21 @@ The demo is designed to run on real iOS devices and showcases multiple Live Acti
 
 <docgen-index>
 
-- [`startActivity(...)`](#startactivity)
-- [`startActivityWithPush(...)`](#startactivitywithpush)
-- [`updateActivity(...)`](#updateactivity)
-- [`endActivity(...)`](#endactivity)
-- [`isAvailable()`](#isavailable)
-- [`isRunning(...)`](#isrunning)
-- [`getCurrentActivity(...)`](#getcurrentactivity)
-- [`listActivities()`](#listactivities)
-- [`observePushToStartToken()`](#observepushtostarttoken)
-- [`addListener('liveActivityPushToken', ...)`](#addlistenerliveactivitypushtoken-)
-- [`addListener('liveActivityPushToStartToken', ...)`](#addlistenerliveactivitypushtostarttoken-)
-- [`addListener('liveActivityUpdate', ...)`](#addlistenerliveactivityupdate-)
-- [Interfaces](#interfaces)
-- [Type Aliases](#type-aliases)
+* [`startActivity(...)`](#startactivity)
+* [`startActivityWithPush(...)`](#startactivitywithpush)
+* [`startActivityScheduled(...)`](#startactivityscheduled)
+* [`updateActivity(...)`](#updateactivity)
+* [`endActivity(...)`](#endactivity)
+* [`isAvailable()`](#isavailable)
+* [`isRunning(...)`](#isrunning)
+* [`getCurrentActivity(...)`](#getcurrentactivity)
+* [`listActivities()`](#listactivities)
+* [`observePushToStartToken()`](#observepushtostarttoken)
+* [`addListener('liveActivityPushToken', ...)`](#addlistenerliveactivitypushtoken-)
+* [`addListener('liveActivityPushToStartToken', ...)`](#addlistenerliveactivitypushtostarttoken-)
+* [`addListener('liveActivityUpdate', ...)`](#addlistenerliveactivityupdate-)
+* [Interfaces](#interfaces)
+* [Type Aliases](#type-aliases)
 
 </docgen-index>
 
@@ -218,7 +301,8 @@ Start a new Live Activity with local (on-device) ActivityKit.
 
 **Since:** 0.0.1
 
----
+--------------------
+
 
 ### startActivityWithPush(...)
 
@@ -239,7 +323,33 @@ the `"liveActivityPushToken"` event shortly after starting.
 
 **Since:** 7.1.0
 
----
+--------------------
+
+
+### startActivityScheduled(...)
+
+```typescript
+startActivityScheduled(options: ScheduledActivityOptions) => Promise<{ activityId: string; }>
+```
+
+Schedule a new Live Activity to start at a future date (iOS 26+).
+
+The activity will start at the specified date even if the app is in the background.
+An alert configuration is required to notify the user when the activity starts.
+
+Note: Scheduled activities count towards the system limit for simultaneous Live Activities.
+The activity state will be `pending` until the scheduled start time.
+
+| Param         | Type                                                                          |
+| ------------- | ----------------------------------------------------------------------------- |
+| **`options`** | <code><a href="#scheduledactivityoptions">ScheduledActivityOptions</a></code> |
+
+**Returns:** <code>Promise&lt;{ activityId: string; }&gt;</code>
+
+**Since:** 8.1.0
+
+--------------------
+
 
 ### updateActivity(...)
 
@@ -255,7 +365,8 @@ Update an existing Live Activity (identified by your logical `id`).
 
 **Since:** 0.0.1
 
----
+--------------------
+
 
 ### endActivity(...)
 
@@ -273,7 +384,8 @@ Optionally provide a final state and a dismissal policy.
 
 **Since:** 0.0.1
 
----
+--------------------
+
 
 ### isAvailable()
 
@@ -289,7 +401,8 @@ Return whether Live Activities are enabled and allowed on this device.
 
 **Since:** 0.0.1
 
----
+--------------------
+
 
 ### isRunning(...)
 
@@ -309,7 +422,8 @@ Return whether a Live Activity with the given logical `id` is currently running.
 
 **Since:** 0.0.1
 
----
+--------------------
+
 
 ### getCurrentActivity(...)
 
@@ -330,7 +444,8 @@ If no `id` is given, returns the most recently started activity.
 
 **Since:** 0.0.1
 
----
+--------------------
+
 
 ### listActivities()
 
@@ -348,7 +463,8 @@ becomes aware of them.
 
 **Since:** 7.1.0
 
----
+--------------------
+
 
 ### observePushToStartToken()
 
@@ -362,7 +478,8 @@ The token will be emitted via `"liveActivityPushToStartToken"`.
 
 **Since:** 7.1.0
 
----
+--------------------
+
 
 ### addListener('liveActivityPushToken', ...)
 
@@ -382,7 +499,8 @@ after calling `startActivityWithPush`.
 
 **Since:** 7.1.0
 
----
+--------------------
+
 
 ### addListener('liveActivityPushToStartToken', ...)
 
@@ -401,7 +519,8 @@ Emitted when a global **push-to-start** token is available (iOS 17.2+).
 
 **Since:** 7.1.0
 
----
+--------------------
+
 
 ### addListener('liveActivityUpdate', ...)
 
@@ -420,9 +539,11 @@ Emitted when the lifecycle of a Live Activity changes (e.g. active → stale).
 
 **Since:** 7.1.0
 
----
+--------------------
+
 
 ### Interfaces
+
 
 #### StartActivityOptions
 
@@ -435,16 +556,21 @@ Options for starting a Live Activity.
 | **`contentState`** | <code><a href="#record">Record</a>&lt;string, string&gt;</code> | Initial dynamic content state.                        |
 | **`timestamp`**    | <code>number</code>                                             | Optional UNIX timestamp when the activity started.    |
 
-#### UpdateActivityOptions
 
-Options for updating a Live Activity.
+#### ScheduledActivityOptions
 
-| Prop               | Type                                                              | Description                                                                      |
-| ------------------ | ----------------------------------------------------------------- | -------------------------------------------------------------------------------- |
-| **`id`**           | <code>string</code>                                               | Logical identifier of the activity to update.                                    |
-| **`contentState`** | <code><a href="#record">Record</a>&lt;string, string&gt;</code>   | Updated dynamic content state.                                                   |
-| **`alert`**        | <code><a href="#alertconfiguration">AlertConfiguration</a></code> | Optional alert configuration to show a notification banner or Apple Watch alert. |
-| **`timestamp`**    | <code>number</code>                                               | Optional UNIX timestamp for the update.                                          |
+Options for scheduling a Live Activity to start at a future date (iOS 26+).
+
+| Prop                     | Type                                                              | Description                                                                                                                                                                                                             | Default                 |
+| ------------------------ | ----------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- |
+| **`id`**                 | <code>string</code>                                               | Logical identifier you use to reference the activity.                                                                                                                                                                   |                         |
+| **`attributes`**         | <code><a href="#record">Record</a>&lt;string, string&gt;</code>   | Immutable attributes for the activity.                                                                                                                                                                                  |                         |
+| **`contentState`**       | <code><a href="#record">Record</a>&lt;string, string&gt;</code>   | Initial dynamic content state.                                                                                                                                                                                          |                         |
+| **`startDate`**          | <code>number</code>                                               | UNIX timestamp (in seconds) when the Live Activity should start. Must be in the future. The system will start the activity at this time even if the app is in the background.                                           |                         |
+| **`alertConfiguration`** | <code><a href="#alertconfiguration">AlertConfiguration</a></code> | Alert configuration to notify the user when the activity starts. Required for scheduled activities to inform users about the started Live Activity.                                                                     |                         |
+| **`enablePushToUpdate`** | <code>boolean</code>                                              | Whether to enable push notifications for this activity. If true, the activity will receive push token updates via the `liveActivityPushToken` event.                                                                    | <code>false</code>      |
+| **`style`**              | <code>'standard' \| 'transient'</code>                            | Activity style: 'standard' or 'transient'. - 'standard': Activity continues until explicitly ended or max duration reached. - 'transient': Activity appears in Dynamic Island but ends automatically when device locks. | <code>'standard'</code> |
+
 
 #### AlertConfiguration
 
@@ -456,6 +582,19 @@ Alert configuration shown for certain updates.
 | **`body`**  | <code>string</code> | Optional body text of the alert.       |
 | **`sound`** | <code>string</code> | Optional sound file name or "default". |
 
+
+#### UpdateActivityOptions
+
+Options for updating a Live Activity.
+
+| Prop               | Type                                                              | Description                                                                      |
+| ------------------ | ----------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| **`id`**           | <code>string</code>                                               | Logical identifier of the activity to update.                                    |
+| **`contentState`** | <code><a href="#record">Record</a>&lt;string, string&gt;</code>   | Updated dynamic content state.                                                   |
+| **`alert`**        | <code><a href="#alertconfiguration">AlertConfiguration</a></code> | Optional alert configuration to show a notification banner or Apple Watch alert. |
+| **`timestamp`**    | <code>number</code>                                               | Optional UNIX timestamp for the update.                                          |
+
+
 #### EndActivityOptions
 
 Options for ending a Live Activity.
@@ -466,6 +605,7 @@ Options for ending a Live Activity.
 | **`contentState`**  | <code><a href="#record">Record</a>&lt;string, string&gt;</code> | Final dynamic content state to render before dismissal.                                         |
 | **`timestamp`**     | <code>number</code>                                             | Optional UNIX timestamp for the end event.                                                      |
 | **`dismissalDate`** | <code>number</code>                                             | Optional future dismissal time (UNIX). If omitted, the system default dismissal policy applies. |
+
 
 #### LiveActivityState
 
@@ -479,68 +619,22 @@ Represents the state of a Live Activity returned by the plugin.
 | **`isEnded`**   | <code>boolean</code>                                            | Whether the activity has ended.                        |
 | **`startedAt`** | <code>string</code>                                             | ISO string of when the activity started (if provided). |
 
+
 #### ListActivitiesResult
 
 Result of listing activities.
 
-| Prop        | Type                                                                                                                                                                                                                                                                                             |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **`items`** | <code><a href="#array">Array</a>&lt;{ /** Your logical ID (attributes.id). \*/ id: string; /** System activity identifier (Activity.id). _/ activityId: string; /\*\* ActivityKit state as a string ("active" \| "stale" \| "pending" \| "ended" \| "dismissed"). _/ state: string; }&gt;</code> |
+| Prop        | Type                                                              |
+| ----------- | ----------------------------------------------------------------- |
+| **`items`** | <code>{ id: string; activityId: string; state: string; }[]</code> |
 
-#### Array
-
-| Prop         | Type                | Description                                                                                            |
-| ------------ | ------------------- | ------------------------------------------------------------------------------------------------------ |
-| **`length`** | <code>number</code> | Gets or sets the length of the array. This is a number one higher than the highest index in the array. |
-
-| Method             | Signature                                                                                                                     | Description                                                                                                                                                                                                                                 |
-| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **toString**       | () =&gt; string                                                                                                               | Returns a string representation of an array.                                                                                                                                                                                                |
-| **toLocaleString** | () =&gt; string                                                                                                               | Returns a string representation of an array. The elements are converted to string using their toLocalString methods.                                                                                                                        |
-| **pop**            | () =&gt; T \| undefined                                                                                                       | Removes the last element from an array and returns it. If the array is empty, undefined is returned and the array is not modified.                                                                                                          |
-| **push**           | (...items: T[]) =&gt; number                                                                                                  | Appends new elements to the end of an array, and returns the new length of the array.                                                                                                                                                       |
-| **concat**         | (...items: <a href="#concatarray">ConcatArray</a>&lt;T&gt;[]) =&gt; T[]                                                       | Combines two or more arrays. This method returns a new array without modifying any existing arrays.                                                                                                                                         |
-| **concat**         | (...items: (T \| <a href="#concatarray">ConcatArray</a>&lt;T&gt;)[]) =&gt; T[]                                                | Combines two or more arrays. This method returns a new array without modifying any existing arrays.                                                                                                                                         |
-| **join**           | (separator?: string \| undefined) =&gt; string                                                                                | Adds all the elements of an array into a string, separated by the specified separator string.                                                                                                                                               |
-| **reverse**        | () =&gt; T[]                                                                                                                  | Reverses the elements in an array in place. This method mutates the array and returns a reference to the same array.                                                                                                                        |
-| **shift**          | () =&gt; T \| undefined                                                                                                       | Removes the first element from an array and returns it. If the array is empty, undefined is returned and the array is not modified.                                                                                                         |
-| **slice**          | (start?: number \| undefined, end?: number \| undefined) =&gt; T[]                                                            | Returns a copy of a section of an array. For both start and end, a negative index can be used to indicate an offset from the end of the array. For example, -2 refers to the second to last element of the array.                           |
-| **sort**           | (compareFn?: ((a: T, b: T) =&gt; number) \| undefined) =&gt; this                                                             | Sorts an array in place. This method mutates the array and returns a reference to the same array.                                                                                                                                           |
-| **splice**         | (start: number, deleteCount?: number \| undefined) =&gt; T[]                                                                  | Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.                                                                                                                      |
-| **splice**         | (start: number, deleteCount: number, ...items: T[]) =&gt; T[]                                                                 | Removes elements from an array and, if necessary, inserts new elements in their place, returning the deleted elements.                                                                                                                      |
-| **unshift**        | (...items: T[]) =&gt; number                                                                                                  | Inserts new elements at the start of an array, and returns the new length of the array.                                                                                                                                                     |
-| **indexOf**        | (searchElement: T, fromIndex?: number \| undefined) =&gt; number                                                              | Returns the index of the first occurrence of a value in an array, or -1 if it is not present.                                                                                                                                               |
-| **lastIndexOf**    | (searchElement: T, fromIndex?: number \| undefined) =&gt; number                                                              | Returns the index of the last occurrence of a specified value in an array, or -1 if it is not present.                                                                                                                                      |
-| **every**          | &lt;S extends T&gt;(predicate: (value: T, index: number, array: T[]) =&gt; value is S, thisArg?: any) =&gt; this is S[]       | Determines whether all the members of an array satisfy the specified test.                                                                                                                                                                  |
-| **every**          | (predicate: (value: T, index: number, array: T[]) =&gt; unknown, thisArg?: any) =&gt; boolean                                 | Determines whether all the members of an array satisfy the specified test.                                                                                                                                                                  |
-| **some**           | (predicate: (value: T, index: number, array: T[]) =&gt; unknown, thisArg?: any) =&gt; boolean                                 | Determines whether the specified callback function returns true for any element of an array.                                                                                                                                                |
-| **forEach**        | (callbackfn: (value: T, index: number, array: T[]) =&gt; void, thisArg?: any) =&gt; void                                      | Performs the specified action for each element in an array.                                                                                                                                                                                 |
-| **map**            | &lt;U&gt;(callbackfn: (value: T, index: number, array: T[]) =&gt; U, thisArg?: any) =&gt; U[]                                 | Calls a defined callback function on each element of an array, and returns an array that contains the results.                                                                                                                              |
-| **filter**         | &lt;S extends T&gt;(predicate: (value: T, index: number, array: T[]) =&gt; value is S, thisArg?: any) =&gt; S[]               | Returns the elements of an array that meet the condition specified in a callback function.                                                                                                                                                  |
-| **filter**         | (predicate: (value: T, index: number, array: T[]) =&gt; unknown, thisArg?: any) =&gt; T[]                                     | Returns the elements of an array that meet the condition specified in a callback function.                                                                                                                                                  |
-| **reduce**         | (callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) =&gt; T) =&gt; T                           | Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.                      |
-| **reduce**         | (callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) =&gt; T, initialValue: T) =&gt; T          |                                                                                                                                                                                                                                             |
-| **reduce**         | &lt;U&gt;(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) =&gt; U, initialValue: U) =&gt; U | Calls the specified callback function for all the elements in an array. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function.                      |
-| **reduceRight**    | (callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) =&gt; T) =&gt; T                           | Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function. |
-| **reduceRight**    | (callbackfn: (previousValue: T, currentValue: T, currentIndex: number, array: T[]) =&gt; T, initialValue: T) =&gt; T          |                                                                                                                                                                                                                                             |
-| **reduceRight**    | &lt;U&gt;(callbackfn: (previousValue: U, currentValue: T, currentIndex: number, array: T[]) =&gt; U, initialValue: U) =&gt; U | Calls the specified callback function for all the elements in an array, in descending order. The return value of the callback function is the accumulated result, and is provided as an argument in the next call to the callback function. |
-
-#### ConcatArray
-
-| Prop         | Type                |
-| ------------ | ------------------- |
-| **`length`** | <code>number</code> |
-
-| Method    | Signature                                                          |
-| --------- | ------------------------------------------------------------------ |
-| **join**  | (separator?: string \| undefined) =&gt; string                     |
-| **slice** | (start?: number \| undefined, end?: number \| undefined) =&gt; T[] |
 
 #### PluginListenerHandle
 
 | Prop         | Type                                      |
 | ------------ | ----------------------------------------- |
 | **`remove`** | <code>() =&gt; Promise&lt;void&gt;</code> |
+
 
 #### PushTokenEvent
 
@@ -552,6 +646,7 @@ Event payload for per-activity live-activity push tokens.
 | **`activityId`** | <code>string</code> | System activity identifier (Activity.id).                   |
 | **`token`**      | <code>string</code> | Hex-encoded APNs/FCM live activity token for this activity. |
 
+
 #### PushToStartTokenEvent
 
 Event payload for the global push-to-start token (iOS 17.2+).
@@ -559,6 +654,7 @@ Event payload for the global push-to-start token (iOS 17.2+).
 | Prop        | Type                | Description                                           |
 | ----------- | ------------------- | ----------------------------------------------------- |
 | **`token`** | <code>string</code> | Hex-encoded APNs/FCM push-to-start token (iOS 17.2+). |
+
 
 #### ActivityUpdateEvent
 
@@ -570,14 +666,14 @@ Event payload for activity lifecycle updates.
 | **`activityId`** | <code>string</code> | System activity identifier (Activity.id). |
 | **`state`**      | <code>string</code> | ActivityKit state as a string.            |
 
+
 ### Type Aliases
+
 
 #### Record
 
 Construct a type with a set of properties K of type T
 
-<code>{
- [P in K]: T;
- }</code>
+<code>{ [P in K]: T; }</code>
 
 </docgen-api>

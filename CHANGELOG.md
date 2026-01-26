@@ -1,5 +1,20 @@
 # Changelog
 
+## [8.1.0] - 2026-01-26
+
+### Added
+
+- **Scheduled Live Activities (iOS 26+):** New `startActivityScheduled(...)` method to schedule Live Activities to start at a future date without requiring push notifications. Activities start automatically at the scheduled time, even when the app is in the background.
+  - New `ScheduledActivityOptions` interface with `startDate`, `alertConfiguration`, `enablePushToUpdate`, and `style` properties.
+  - Alert notifications are required and shown to users when the scheduled activity starts.
+  - Scheduled activities appear with `pending` state until the start time.
+- **Example Demo:** Added new "Scheduled Activity" demo in example app showcasing the iOS 26+ feature with quick schedule buttons and custom configuration.
+
+### Changed
+
+- **Documentation:** Updated README with comprehensive usage examples for scheduled activities, including real-world use cases like sports games and scheduled events.
+- **Platform Support:** Added iOS 26+ platform notes throughout documentation.
+
 ## [8.0.0] - 2026-01-03
 
 ### Breaking

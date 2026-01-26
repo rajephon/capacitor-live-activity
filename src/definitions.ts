@@ -5,7 +5,7 @@
 // Author: Simon Kirchner
 // License: MIT
 
-import { PluginListenerHandle } from '@capacitor/core';
+import type { PluginListenerHandle } from '@capacitor/core';
 
 export interface LiveActivityPlugin {
   /**
@@ -27,6 +27,21 @@ export interface LiveActivityPlugin {
    * @platform iOS
    */
   startActivityWithPush(options: StartActivityOptions): Promise<{ activityId: string }>;
+
+  /**
+   * Schedule a new Live Activity to start at a future date (iOS 26+).
+   *
+   * The activity will start at the specified date even if the app is in the background.
+   * An alert configuration is required to notify the user when the activity starts.
+   *
+   * Note: Scheduled activities count towards the system limit for simultaneous Live Activities.
+   * The activity state will be `pending` until the scheduled start time.
+   *
+   * @returns An object containing the system `activityId`.
+   * @since 8.1.0
+   * @platform iOS 26+
+   */
+  startActivityScheduled(options: ScheduledActivityOptions): Promise<{ activityId: string }>;
 
   /**
    * Update an existing Live Activity (identified by your logical `id`).
@@ -168,6 +183,54 @@ export interface StartActivityOptions {
 }
 
 /**
+ * Options for scheduling a Live Activity to start at a future date (iOS 26+).
+ */
+export interface ScheduledActivityOptions {
+  /**
+   * Logical identifier you use to reference the activity.
+   */
+  id: string;
+
+  /**
+   * Immutable attributes for the activity.
+   */
+  attributes: Record<string, string>;
+
+  /**
+   * Initial dynamic content state.
+   */
+  contentState: Record<string, string>;
+
+  /**
+   * UNIX timestamp (in seconds) when the Live Activity should start.
+   * Must be in the future. The system will start the activity at this time
+   * even if the app is in the background.
+   */
+  startDate: number;
+
+  /**
+   * Alert configuration to notify the user when the activity starts.
+   * Required for scheduled activities to inform users about the started Live Activity.
+   */
+  alertConfiguration: AlertConfiguration;
+
+  /**
+   * Whether to enable push notifications for this activity.
+   * If true, the activity will receive push token updates via the `liveActivityPushToken` event.
+   * @default false
+   */
+  enablePushToUpdate?: boolean;
+
+  /**
+   * Activity style: 'standard' or 'transient'.
+   * - 'standard': Activity continues until explicitly ended or max duration reached.
+   * - 'transient': Activity appears in Dynamic Island but ends automatically when device locks.
+   * @default 'standard'
+   */
+  style?: 'standard' | 'transient';
+}
+
+/**
  * Options for updating a Live Activity.
  */
 export interface UpdateActivityOptions {
@@ -274,7 +337,7 @@ export interface AlertConfiguration {
  * @platform iOS
  */
 export interface ListActivitiesResult {
-  items: Array<{
+  items: {
     /** Your logical ID (attributes.id). */
     id: string;
 
@@ -283,7 +346,7 @@ export interface ListActivitiesResult {
 
     /** ActivityKit state as a string ("active" | "stale" | "pending" | "ended" | "dismissed"). */
     state: string;
-  }>;
+  }[];
 }
 
 /**

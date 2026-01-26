@@ -80,6 +80,68 @@ private let EVT_ACTIVITY_UPDATE = "liveActivityUpdate"
         return activity.id
     }
 
+    @available(iOS 26.0, *)
+    @objc public func startActivityScheduled(
+        id: String,
+        attributes: [String: String],
+        content: [String: String],
+        startDate: Date,
+        alertConfig: [String: Any],
+        enablePushToUpdate: Bool,
+        style: String
+    ) async throws -> String {
+        let attr = GenericAttributes(id: id, staticValues: attributes)
+        let state = GenericAttributes.ContentState(values: content)
+        let activityContent = ActivityContent(state: state, staleDate: nil)
+
+        // Parse alert configuration
+        let alertTitle = alertConfig["title"] as? String ?? ""
+        let alertBody = alertConfig["body"] as? String ?? ""
+        let alertSound = alertConfig["sound"] as? String
+
+        let alert = AlertConfiguration(
+            title: .init(stringLiteral: alertTitle),
+            body: .init(stringLiteral: alertBody),
+            sound: alertSound.map { .named($0) } ?? .default
+        )
+
+        // Determine activity style
+        let activityStyle: ActivityStyle = (style == "transient") ? .transient : .standard
+
+        // Determine push type
+        let pushType: PushType? = enablePushToUpdate ? .token : nil
+
+        // Request scheduled activity
+        let activity = try Activity<GenericAttributes>.request(
+            attributes: attr,
+            content: activityContent,
+            pushType: pushType,
+            style: activityStyle,
+            alertConfiguration: alert,
+            start: startDate
+        )
+
+        self.activities[id] = activity
+
+        // If push is enabled, observe push token updates
+        if enablePushToUpdate {
+            Task { [weak self] in
+                for await data in activity.pushTokenUpdates {
+                    let token = data.map { String(format: "%02x", $0) }.joined()
+                    self?.plugin?.notifyListeners(
+                        EVT_PUSH_TOKEN,
+                        data: [
+                            "id": id,
+                            "activityId": activity.id,
+                            "token": token,
+                        ])
+                }
+            }
+        }
+
+        return activity.id
+    }
+
     @objc public func update(id: String, content: [String: String]) async {
         if let activity = activities[id] {
             let state = GenericAttributes.ContentState(values: content)

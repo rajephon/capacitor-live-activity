@@ -10,6 +10,7 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
     public let pluginMethods: [CAPPluginMethod] = [
         CAPPluginMethod(name: "startActivity", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "startActivityWithPush", returnType: CAPPluginReturnPromise),
+        CAPPluginMethod(name: "startActivityScheduled", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "updateActivity", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "endActivity", returnType: CAPPluginReturnPromise),
         CAPPluginMethod(name: "isAvailable", returnType: CAPPluginReturnPromise),
@@ -60,6 +61,42 @@ public class LiveActivityPlugin: CAPPlugin, CAPBridgedPlugin {
             } catch {
                 call.reject("startActivityWithPush failed: \(error.localizedDescription)")
             }
+        }
+    }
+
+    @objc func startActivityScheduled(_ call: CAPPluginCall) {
+        if #available(iOS 26.0, *) {
+            guard let id = call.getString("id"),
+                let attributes = call.getObject("attributes") as? [String: String],
+                let contentState = call.getObject("contentState") as? [String: String],
+                let startDate = call.getDouble("startDate"),
+                let alertConfig = call.getObject("alertConfiguration")
+            else {
+                call.reject("Missing required parameters for scheduled activity")
+                return
+            }
+
+            let enablePushToUpdate = call.getBool("enablePushToUpdate") ?? false
+            let styleString = call.getString("style") ?? "standard"
+
+            Task {
+                do {
+                    let activityId = try await implementation.startActivityScheduled(
+                        id: id,
+                        attributes: attributes,
+                        content: contentState,
+                        startDate: Date(timeIntervalSince1970: startDate),
+                        alertConfig: alertConfig,
+                        enablePushToUpdate: enablePushToUpdate,
+                        style: styleString
+                    )
+                    call.resolve(["activityId": activityId])
+                } catch {
+                    call.reject("startActivityScheduled failed: \(error.localizedDescription)")
+                }
+            }
+        } else {
+            call.reject("startActivityScheduled requires iOS 26.0+")
         }
     }
 
