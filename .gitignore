@@ -1,5 +1,6 @@
 # node files
-dist
+# Note: dist/ is committed in this fork so installs from git work without a build step
+# (upstream kisimediaDE/capacitor-live-activity ignores dist/, but we mirror prebuilt artifacts here)
 node_modules
 
 # iOS files
